@@ -20,9 +20,6 @@ export default function Main() {
   // Dynamic
   const { sdkHasLoaded, user } = useDynamicContext();
 
-  // Telegram
-  const { telegramSignIn } = useTelegramLogin();
-
   // Data
   const [username, setUsername] = useState<string>();
 
@@ -30,10 +27,7 @@ export default function Main() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState("welcome");
   const [selectedWallet, setSelectedWallet] = useState<MarketSummary>();
-  // Front-end
 
-
-  console.log("user", user);
   function changeDisplay(page: string) {
     setCurrentPage(page);
   }
@@ -44,15 +38,10 @@ export default function Main() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const page = urlParams.get("page");
 
-    if (page) {
-      setCurrentPage(page);
-    }
 
     if (WebApp.initDataUnsafe.user) {
       setUsername(WebApp.initDataUnsafe.user.username);
-      // setIsMenuOpen(false);
     }
   }, []);
 

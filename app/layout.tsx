@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "MiniSafe",
   description: "MiniSafe allows easier access to your Safe Wallet funds.",
 };
-const dynamicEnvId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
+const dynamicEnvId = '258bb8c8-30d0-4596-8e81-04411ae8f398'
 
 export default function RootLayout({
   children,

@@ -99,7 +99,7 @@ export default function PolymarketList({
         </div>
       ) : (
         <div className="text-center">
-          <p>No markets found for "{value}".</p>
+          <p>No markets found for {value}.</p>
         </div>
       )}
     </div>

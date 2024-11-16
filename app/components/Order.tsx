@@ -1,14 +1,11 @@
 import { MarketSummary } from "@/types/polymarket";
 import { useState } from "react";
-import { getSigner } from "@dynamic-labs/ethers-v6";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-// export type MarketSummary = {
-//     id: string;
-//     name: string;
-//     image: string;
-//     price: number;
-//     volume: number;
-//   };
+import { isEthereumWallet } from "@dynamic-labs/ethereum";
+import { parseUnits } from "viem";
+import SwapOrderFactoryABI  from "../../src/SwapOrderFactoryABI.json";
+import crypto from "crypto";
+
 type MarketProps = {
   market: MarketSummary;
 };
@@ -81,7 +78,7 @@ type ActionProps = {
   selectToAsset: (asset: string) => void;
   selectAmount: (amount: number) => void;
 };
-function Action({ tokens }: ActionProps) {
+function Action({ tokens, selectAction, selectFromAsset, selectToAsset, selectAmount }: ActionProps) {
   return (
     <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md max-w-md space-y-4">
       {/* Title and Description */}
@@ -106,7 +103,11 @@ function Action({ tokens }: ActionProps) {
       <div className="flex justify-between items-center">
         <label className="text-sm text-gray-700 font-medium">Buy asset</label>
         <select className="border border-gray-300 rounded-lg p-2 text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500">
-          <option value="USDC">USDC</option>
+          {tokens.map((token) => (
+              <option key={token} value={token}>
+              {token}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -114,11 +115,7 @@ function Action({ tokens }: ActionProps) {
       <div className="flex justify-between items-center">
         <label className="text-sm text-gray-700 font-medium">From asset</label>
         <select className="border border-gray-300 rounded-lg p-2 text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500">
-          {tokens.map((token) => (
-            <option key={token} value={token}>
-              {token}
-            </option>
-          ))}
+          <option value="USDC">USDC</option>
         </select>
       </div>
 
@@ -140,22 +137,74 @@ export default function Order({ market }: Props) {
   const [threshold, setThreshold] = useState(50);
   const [action, setAction] = useState("buy");
   const [fromAsset, setFromAsset] = useState("USDC");
-  const [toAsset, setToAsset] = useState("SOL");
+  const [toAsset, setToAsset] = useState("ETH");
+  const [amount, setAmount] = useState(0);
+
+  const WETH = "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1";
+  const USDT = "0x4ecaba5870353805a9f068101a40e0f32ed605c6";
+  const ORDER_FACTORY = "0xF1D37c91cfE1C3bF137898CF89B96D196d02acCb";
 
   const { primaryWallet } = useDynamicContext();
-  if (!primaryWallet) {
-    return <div>Connect your wallet to start automating</div>;
-  }
-  const sendTransaction = async () => {
-    const signer = await getSigner(primaryWallet);
 
-    // Now you can use the signer to write data to the blockchain
-    const tx = await signer?.sendTransaction({
-      to: signer.address,
-      value: "1000",
-    });
-    return tx;
+  if (!primaryWallet || !isEthereumWallet(primaryWallet)) return null;
+
+  const sendTransaction = async (sellToken:string, buyToken:string, sellAmount:string, buyAmount:string) => {
+    try {
+      const walletClient = await primaryWallet.getWalletClient();
+      if (!walletClient) {
+        console.error("Wallet client not found");
+        return;
+      }
+      const mappToken: { [key: string]: string } = {
+        "USDC": "0x4ecaba5870353805a9f068101a40e0f32ed605c6",
+        "SOL": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+        "BTC": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+        "ETH": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+      }; 
+      const salt = "0x" + crypto.randomBytes(32).toString("hex");
+      const publicClient = await primaryWallet.getPublicClient();
+      const order = {
+        sellToken:mappToken[sellToken],
+        buyToken: mappToken[buyToken],
+        receiver: primaryWallet.address, // Replace with your wallet address
+        sellAmount: parseUnits("0.000001", 18),
+        buyAmount: parseUnits("0.0002", 6),
+        validTo: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 1 week
+        marketId: BigInt(1),
+        marketWantedResult: BigInt(1),
+        feeAmount: parseUnits("0.0005", 18),
+        meta: "0x",
+      };
+      let pl;
+      let inst;
+      let receipt
+
+
+      console.log("Transaction sent:", order);
+      const { result, request } = await publicClient.simulateContract({
+        address: ORDER_FACTORY,
+        abi: SwapOrderFactoryABI,
+        functionName: "placeWaitingSwap",
+        args: [order, salt],
+      });
+      console.log("Simulation Result:", result);
+      pl = result[0];
+      inst = result[1];
+      request.gas = BigInt(3000000)
+      const tx = await walletClient.writeContract(request);
+      console.log("Transaction Hash:", tx);
+
+      // Wait for the transaction receipt
+      receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      console.log("Transaction Receipt:", receipt);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
   };
+
+
+
+
   return (
     <div className="p-4">
       <SelectedMarket market={market} />
@@ -168,11 +217,11 @@ export default function Order({ market }: Props) {
         selectAction={setAction}
         selectFromAsset={setFromAsset}
         selectToAsset={setToAsset}
-        selectAmount={(amount) => console.log(amount)}
+        selectAmount={setAmount}
       />
       <button
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-        onClick={sendTransaction}
+        onClick={()=>sendTransaction(fromAsset, toAsset, amount!.toString(), "0.0002")}
       >
         Save automation
       </button>

@@ -78,7 +78,7 @@ type ActionProps = {
   selectToAsset: (asset: string) => void;
   selectAmount: (amount: number) => void;
 };
-function Action({ tokens }: ActionProps) {
+function Action({ tokens, selectAction, selectFromAsset, selectToAsset, selectAmount }: ActionProps) {
   return (
     <div className="p-4 bg-white border border-gray-300 rounded-lg shadow-md max-w-md space-y-4">
       {/* Title and Description */}
@@ -103,7 +103,11 @@ function Action({ tokens }: ActionProps) {
       <div className="flex justify-between items-center">
         <label className="text-sm text-gray-700 font-medium">Buy asset</label>
         <select className="border border-gray-300 rounded-lg p-2 text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500">
-          <option value="USDC">USDC</option>
+          {tokens.map((token) => (
+              <option key={token} value={token}>
+              {token}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -111,11 +115,7 @@ function Action({ tokens }: ActionProps) {
       <div className="flex justify-between items-center">
         <label className="text-sm text-gray-700 font-medium">From asset</label>
         <select className="border border-gray-300 rounded-lg p-2 text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500">
-          {tokens.map((token) => (
-            <option key={token} value={token}>
-              {token}
-            </option>
-          ))}
+          <option value="USDC">USDC</option>
         </select>
       </div>
 
@@ -137,7 +137,8 @@ export default function Order({ market }: Props) {
   const [threshold, setThreshold] = useState(50);
   const [action, setAction] = useState("buy");
   const [fromAsset, setFromAsset] = useState("USDC");
-  const [toAsset, setToAsset] = useState("SOL");
+  const [toAsset, setToAsset] = useState("ETH");
+  const [amount, setAmount] = useState(0);
 
   const WETH = "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1";
   const USDT = "0x4ecaba5870353805a9f068101a40e0f32ed605c6";
@@ -147,19 +148,24 @@ export default function Order({ market }: Props) {
 
   if (!primaryWallet || !isEthereumWallet(primaryWallet)) return null;
 
-  const sendTransaction = async () => {
+  const sendTransaction = async (sellToken:string, buyToken:string, sellAmount:string, buyAmount:string) => {
     try {
-      const wallet = primaryWallet;
       const walletClient = await primaryWallet.getWalletClient();
       if (!walletClient) {
         console.error("Wallet client not found");
         return;
       }
+      const mappToken: { [key: string]: string } = {
+        "USDC": "0x4ecaba5870353805a9f068101a40e0f32ed605c6",
+        "SOL": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+        "BTC": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+        "ETH": "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1",
+      }; 
       const salt = "0x" + crypto.randomBytes(32).toString("hex");
       const publicClient = await primaryWallet.getPublicClient();
       const order = {
-        sellToken: WETH,
-        buyToken: USDT,
+        sellToken:mappToken[sellToken],
+        buyToken: mappToken[buyToken],
         receiver: primaryWallet.address, // Replace with your wallet address
         sellAmount: parseUnits("0.000001", 18),
         buyAmount: parseUnits("0.0002", 6),
@@ -211,11 +217,11 @@ export default function Order({ market }: Props) {
         selectAction={setAction}
         selectFromAsset={setFromAsset}
         selectToAsset={setToAsset}
-        selectAmount={(amount) => console.log(amount)}
+        selectAmount={setAmount}
       />
       <button
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-        onClick={sendTransaction}
+        onClick={()=>sendTransaction(fromAsset, toAsset, amount!.toString(), "0.0002")}
       >
         Save automation
       </button>

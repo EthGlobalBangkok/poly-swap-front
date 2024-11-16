@@ -67,3 +67,11 @@ export type MarketSummary = {
   volume: number;
 };
 
+export type PolySwap = {
+  id: string;
+  name: string;
+  amount : number;
+  price: number;
+  tokenFrom: string;
+  tokenTo: string;
+};

@@ -31,17 +31,17 @@ export default function Main() {
   const [currentPage, setCurrentPage] = useState("welcome");
   const [selectedWallet, setSelectedWallet] = useState<MarketSummary>();
   // Front-end
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
 
   console.log("user", user);
   function changeDisplay(page: string) {
     setCurrentPage(page);
-    setIsMenuOpen(false);
   }
 
   function selectWallet(wallet: MarketSummary) {
-   setSelectedWallet(wallet);
+    setSelectedWallet(wallet);
   }
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get("page");
@@ -52,25 +52,17 @@ export default function Main() {
 
     if (WebApp.initDataUnsafe.user) {
       setUsername(WebApp.initDataUnsafe.user.username);
-      setIsMenuOpen(false);
+      // setIsMenuOpen(false);
     }
   }, []);
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
-    // const signIn = async () => {
-    //   if (!user) {
-    //     await telegramSignIn({ forceCreateUser: true });
-    //   }
-    //   setIsLoading(false);
-    // };
-
-    // signIn();
     setIsLoading(false);
     changeDisplay("market");
-
   }, [sdkHasLoaded]);
+
   console.log("current page", currentPage);
   return (
     <NextUIProvider>
@@ -90,6 +82,17 @@ export default function Main() {
           <>
             <div>
               <DynamicWidget />
+
+              {/* Back Button */}
+              {currentPage!=="welcome" && (
+                <button
+                  onClick={() => changeDisplay(currentPage === "order" ? "market" : "welcome")}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition-all mb-4"
+                >
+                  Back
+                </button>
+              )}
+
               <>
                 {(currentPage === "market" && selectWallet !==undefined) ? (
                   <MarketSelect
@@ -97,7 +100,7 @@ export default function Main() {
                     keyWords={["sec", "eth", "btc"]}
                     changeDisplay={changeDisplay}
                     SelectMarket={selectWallet}
-
+                    pendingSwaps={[]}
                   />
                 ) : (
                   currentPage === "order" && <Order market={selectedWallet!} />

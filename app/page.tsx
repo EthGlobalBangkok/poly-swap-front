@@ -136,6 +136,7 @@ export default function Main() {
         ) : (
           <>
             <DynamicWidget />
+            {/* TO UNCOMMENT */}
             {/* {user !== undefined && ( */}
               <>
                 <SetupDisplay click={toggleToken} tokens={tokens} />

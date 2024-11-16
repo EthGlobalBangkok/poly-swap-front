@@ -1,0 +1,269 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "settlement_",
+        "type": "address",
+        "internalType": "contract ICoWSwapSettlement"
+      },
+      {
+        "name": "composableCow_",
+        "type": "address",
+        "internalType": "contract ComposableCoW"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "APP_DATA",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "composableCow",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract ComposableCoW"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "domainSeparator",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "placeWaitingSwap",
+    "inputs": [
+      {
+        "name": "data",
+        "type": "tuple",
+        "internalType": "struct SwapOrderFactory.Data",
+        "components": [
+          {
+            "name": "sellToken",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "buyToken",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "receiver",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "sellAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "buyAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validTo",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "marketId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "marketWantedResult",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "feeAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "meta",
+            "type": "bytes",
+            "internalType": "bytes"
+          }
+        ]
+      },
+      {
+        "name": "salt",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "orderUid",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "instance",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "settlement",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract ICoWSwapSettlement"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "OrderPlacement",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "order",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct GPv2Order.Data",
+        "components": [
+          {
+            "name": "sellToken",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "buyToken",
+            "type": "address",
+            "internalType": "contract IERC20"
+          },
+          {
+            "name": "receiver",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "sellAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "buyAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validTo",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "appData",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "feeAmount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "kind",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "partiallyFillable",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "sellTokenBalance",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "buyTokenBalance",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          }
+        ]
+      },
+      {
+        "name": "signature",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct ICoWSwapOnchainOrders.OnchainSignature",
+        "components": [
+          {
+            "name": "scheme",
+            "type": "uint8",
+            "internalType": "enum ICoWSwapOnchainOrders.OnchainSigningScheme"
+          },
+          {
+            "name": "data",
+            "type": "bytes",
+            "internalType": "bytes"
+          }
+        ]
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PolySwapOrder",
+    "inputs": [
+      {
+        "name": "instance",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  }
+]

@@ -1,14 +1,11 @@
 import { MarketSummary } from "@/types/polymarket";
 import { useState } from "react";
-import { getSigner } from "@dynamic-labs/ethers-v6";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-// export type MarketSummary = {
-//     id: string;
-//     name: string;
-//     image: string;
-//     price: number;
-//     volume: number;
-//   };
+import { isEthereumWallet } from "@dynamic-labs/ethereum";
+import { parseUnits } from "viem";
+import SwapOrderFactoryABI  from "../../src/SwapOrderFactoryABI.json";
+import crypto from "crypto";
+
 type MarketProps = {
   market: MarketSummary;
 };
@@ -142,20 +139,66 @@ export default function Order({ market }: Props) {
   const [fromAsset, setFromAsset] = useState("USDC");
   const [toAsset, setToAsset] = useState("SOL");
 
-  const { primaryWallet } = useDynamicContext();
-  if (!primaryWallet) {
-    return <div>Connect your wallet to start automating</div>;
-  }
-  const sendTransaction = async () => {
-    const signer = await getSigner(primaryWallet);
+  const WETH = "0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1";
+  const USDT = "0x4ecaba5870353805a9f068101a40e0f32ed605c6";
+  const ORDER_FACTORY = "0xF1D37c91cfE1C3bF137898CF89B96D196d02acCb";
 
-    // Now you can use the signer to write data to the blockchain
-    const tx = await signer?.sendTransaction({
-      to: signer.address,
-      value: "1000",
-    });
-    return tx;
+  const { primaryWallet } = useDynamicContext();
+
+  if (!primaryWallet || !isEthereumWallet(primaryWallet)) return null;
+
+  const sendTransaction = async () => {
+    try {
+      const wallet = primaryWallet;
+      const walletClient = await primaryWallet.getWalletClient();
+      if (!walletClient) {
+        console.error("Wallet client not found");
+        return;
+      }
+      const salt = "0x" + crypto.randomBytes(32).toString("hex");
+      const publicClient = await primaryWallet.getPublicClient();
+      const order = {
+        sellToken: WETH,
+        buyToken: USDT,
+        receiver: primaryWallet.address, // Replace with your wallet address
+        sellAmount: parseUnits("0.000001", 18),
+        buyAmount: parseUnits("0.0002", 6),
+        validTo: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 1 week
+        marketId: BigInt(1),
+        marketWantedResult: BigInt(1),
+        feeAmount: parseUnits("0.0005", 18),
+        meta: "0x",
+      };
+      let pl;
+      let inst;
+      let receipt
+
+
+      console.log("Transaction sent:", order);
+      const { result, request } = await publicClient.simulateContract({
+        address: ORDER_FACTORY,
+        abi: SwapOrderFactoryABI,
+        functionName: "placeWaitingSwap",
+        args: [order, salt],
+      });
+      console.log("Simulation Result:", result);
+      pl = result[0];
+      inst = result[1];
+      request.gas = BigInt(3000000)
+      const tx = await walletClient.writeContract(request);
+      console.log("Transaction Hash:", tx);
+
+      // Wait for the transaction receipt
+      receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      console.log("Transaction Receipt:", receipt);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
   };
+
+
+
+
   return (
     <div className="p-4">
       <SelectedMarket market={market} />

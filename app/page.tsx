@@ -12,9 +12,9 @@ import { CircularProgress, NextUIProvider } from "@nextui-org/react";
 
 import { WelcomeDisplay } from "./components/WelcomeDisplay";
 
-import { Token } from "@/types/token";
-
 import MarketSelect from "./components/MarketSelect";
+import { MarketSummary } from "@/types/polymarket";
+import Order from "./components/Order";
 
 export default function Main() {
   // Dynamic
@@ -29,7 +29,7 @@ export default function Main() {
   // App management
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState("welcome");
-
+  const [selectedWallet, setSelectedWallet] = useState<MarketSummary>();
   // Front-end
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -39,6 +39,9 @@ export default function Main() {
     setIsMenuOpen(false);
   }
 
+  function selectWallet(wallet: MarketSummary) {
+   setSelectedWallet(wallet);
+  }
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get("page");
@@ -56,24 +59,27 @@ export default function Main() {
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
-    const signIn = async () => {
-      if (!user) {
-        await telegramSignIn({ forceCreateUser: true });
-      }
-      setIsLoading(false);
-    };
+    // const signIn = async () => {
+    //   if (!user) {
+    //     await telegramSignIn({ forceCreateUser: true });
+    //   }
+    //   setIsLoading(false);
+    // };
 
-    signIn();
+    // signIn();
+    setIsLoading(false);
+    changeDisplay("market");
+
   }, [sdkHasLoaded]);
-  console.log("user", user);
+  console.log("current page", currentPage);
   return (
     <NextUIProvider>
       <main
         className={`flex min-h-screen items-center justify-center py-4 ${
           currentPage.toLowerCase() === "send" ||
           currentPage.toLowerCase() === "apps"
-            ? "bg-lightGreen"
-            : "bg-darkGreen"
+            ? "bg-whitos"
+            : "bg-whitos"
         }`}
       >
         {isLoading ? (
@@ -84,12 +90,19 @@ export default function Main() {
           <>
             <div>
               <DynamicWidget />
+              <>
+                {(currentPage === "market" && selectWallet !==undefined) ? (
+                  <MarketSelect
+                    userAddress="0x84212847694332095BC8e3B963EcBF87673e954e"
+                    keyWords={["sec", "eth", "btc"]}
+                    changeDisplay={changeDisplay}
+                    SelectMarket={selectWallet}
 
-              <MarketSelect
-                userAddress="0x84212847694332095BC8e3B963EcBF87673e954e"
-                keyWords={["sec", "eth", "btc"]}
-              />
-
+                  />
+                ) : (
+                  currentPage === "order" && <Order market={selectedWallet!} />
+                )}
+              </>
             </div>
           </>
         )}

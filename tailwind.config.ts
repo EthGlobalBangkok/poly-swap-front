@@ -20,6 +20,7 @@ const config: Config = {
         darkRed: '#580C1F',
         mediumRed: "#74121D",
         lightRed: '#A7333F',
+        whitos: '#F5F5F5',
       },
     },
   },

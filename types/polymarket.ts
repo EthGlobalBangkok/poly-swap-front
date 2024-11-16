@@ -1,9 +1,9 @@
-type EventSearchResponse = {
+export type EventSearchResponse = {
   data: PlmSubject[];
   meta: Meta;
 };
 
-type PlmSubject = {
+export type PlmSubject = {
   id: string;
   ticker: string;
   slug: string;
@@ -34,7 +34,7 @@ type PlmSubject = {
   markets: Market[];
 };
 
-type Market = {
+export type Market = {
   id: string;
   question: string;
   conditionId: string;
@@ -59,7 +59,7 @@ type Meta = {
   offset: number;
 };
 
-type MarketSummary = {
+export type MarketSummary = {
   id: string;
   name: string;
   image: string;

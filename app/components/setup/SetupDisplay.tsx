@@ -1,9 +1,5 @@
 import { Token } from "../../../types/token";
-// export type Token = {
-//     chainId: number;
-//     balance: number;
-//     logo: string;
-// }
+
 interface SetupDisplayProps {
     tokens: Token[];
     click: (token: Token | null) => void;

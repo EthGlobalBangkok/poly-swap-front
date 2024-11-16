@@ -59,3 +59,11 @@ type Meta = {
   offset: number;
 };
 
+type MarketSummary = {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  volume: number;
+};
+

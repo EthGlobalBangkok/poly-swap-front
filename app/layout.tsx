@@ -4,7 +4,6 @@ import { Syne } from "next/font/google";
 import {
   DynamicContextProvider,
   EthereumWalletConnectors,
-  ZeroDevSmartWalletConnectors,
 } from "../lib/dynamic";
 
 const syne = Syne({ subsets: ["latin"] });
@@ -31,7 +30,7 @@ export default function RootLayout({
       <DynamicContextProvider
         settings={{
           environmentId: dynamicEnvId,
-          walletConnectors: [EthereumWalletConnectors,ZeroDevSmartWalletConnectors],
+          walletConnectors: [EthereumWalletConnectors],
         }}
       >
         <body className={syne.className}>{children}</body>
